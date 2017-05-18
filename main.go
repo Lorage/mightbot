@@ -38,6 +38,18 @@ func main() {
 	// handles reading from the connection
 	tp := textproto.NewReader(bufio.NewReader(conn))
 
+	//Check for spam/message frequency
+	//Load JSON file with basic text command and responses
+	/*
+		[
+			{
+				"command": "!thiscommand",
+				"user": "username",
+				"response": "Response text"
+			}
+		]
+	*/
+
 	for {
 		msg, err := tp.ReadLine()
 		if err != nil {
