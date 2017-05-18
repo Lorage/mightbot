@@ -10,7 +10,11 @@ export BOT_OAUTH_TOKEN="[your bot OAuth token]"
 ## Setup
 1. Create your environment variables in ~./bashrc
 2. cd into the folder where main.go and commands.json live
-3. run `go run main.go`
+3. Add new commands to commands.json in the form of:
+``` 
+{ "command": [what to listen for], "response": "[your bot's response]" } 
+```
+4. run `go run main.go`
 
 
 #### OAUTH
