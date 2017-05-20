@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/textproto"
@@ -67,7 +68,9 @@ func main() {
 
 	for {
 		msg, err := tp.ReadLine()
-		if err != nil {
+		if err == io.EOF {
+			continue
+		} else if err != nil {
 			panic(err)
 		}
 
