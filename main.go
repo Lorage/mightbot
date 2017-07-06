@@ -79,26 +79,27 @@ func startBot(token string, botName string, targetChannel string, commands []Com
 		}
 	}()
 
-	go func() {
-		for message := range botRecord.BotChannel {
-			switch message {
-			case "refresh":
+	for {
+		select {
+		case channelResult := <-botRecord.BotChannel:
+			switch {
+			case channelResult == "refresh":
 				routineTimer = 0
-			case "close":
+			case channelResult == "close":
 				return
 			default:
+				break
 			}
+		default:
+			break
 		}
-	}()
 
-	for {
 		if routineTimer >= 30 {
 			return
 		}
 
 		msg, err := tp.ReadLine()
 		if err == io.EOF {
-			fmt.Println("EOF", err)
 			continue
 		} else if err != nil {
 			panic(err)
@@ -108,7 +109,7 @@ func startBot(token string, botName string, targetChannel string, commands []Com
 
 		// For logging purposes
 		fmt.Println(msgParts)
-		fmt.Println(msgParts[1])
+
 		// Respond with PONG required
 		if msgParts[0] == "PING" {
 			conn.Write([]byte("PONG :tmi.twitch.tv\r\n"))
