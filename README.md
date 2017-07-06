@@ -10,7 +10,7 @@ A simple Twitch chatbot written in Go.
 ```
 
 ### Closing channels
-Bots close automatically after 30 minutes, unles you send the `refresh` message to `/refresh`.
+Bots close automatically after 30 minutes, unless you send the `refresh` message to `/refresh`.
 
 Bots can be closed specifically by sending a matching `uuid` to a created bot and the `close` message to `/close`.
 
