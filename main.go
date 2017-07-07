@@ -59,6 +59,7 @@ func main() {
 		for index, bot := range botDirectory {
 			if bot.UUID == closeInfo.UUID {
 				bot.BotChannel <- "close"
+				botDirectory[index] = botlogic.BotRecord{}
 				botDirectory = remove(botDirectory, index)
 				w.Write([]byte("Bot closed.\n"))
 			}
@@ -66,24 +67,19 @@ func main() {
 	})
 
 	serve.HandleFunc("/createBot", func(w http.ResponseWriter, r *http.Request) {
-		var botExists bool
 		var botInfo botlogic.BotInfo
 		decodeValidate(w, r, &botInfo)
 
 		for _, val := range botDirectory {
 			if val.UUID == botInfo.UUID {
-				botExists = true
+				return
 			}
-		}
-
-		if botExists == true {
-			return
 		}
 
 		newChannel := make(chan string)
 		newRecord := botlogic.BotRecord{UUID: botInfo.UUID, BotChannel: newChannel}
 		botDirectory = append(botDirectory, newRecord)
-		go botlogic.StartBot(&botInfo, newRecord)
+		go botlogic.StartBot(&botDirectory, &botInfo, newRecord)
 		w.Write([]byte("Bot created.\n"))
 	})
 

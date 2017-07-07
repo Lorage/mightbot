@@ -30,7 +30,7 @@ type BotInfo struct {
 	Commands      []CommandObject `json:"commands"`
 }
 
-func StartBot(botInfo *BotInfo, botRecord BotRecord) {
+func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) {
 	var lastPing = time.Now().Unix()
 	// Connect to the twitch server
 	conn, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
@@ -60,9 +60,16 @@ func StartBot(botInfo *BotInfo, botRecord BotRecord) {
 			break
 		}
 
-		var pingCheck = time.Now().Unix()%lastPing > 1800
-		if pingCheck {
-			return
+		// TODO: time check doesn't clear botDirectory of bot botRecord 1800 is 30 minutes
+		if time.Now().Unix()%lastPing > 200 {
+			//var blank = BotInfo{}
+			for index, bot := range *botDirectory {
+				if bot.UUID == botInfo.UUID {
+					(*botDirectory)[index] = BotRecord{}
+					return
+				}
+			}
+
 		}
 
 		msg, err := tp.ReadLine()
