@@ -6,8 +6,8 @@ import (
 	"io"
 	"net"
 	"net/textproto"
-	"os"
 	"strings"
+	"time"
 )
 
 type BotRecord struct {
@@ -21,8 +21,17 @@ type CommandObject struct {
 	Response string
 }
 
-func StartBot(token string, botName string, targetChannel string, commands []CommandObject, botRecord BotRecord) {
-	var routineTimer int
+// Structure of bot creator's submission
+type BotInfo struct {
+	Token         string          `json:"token"`
+	BotName       string          `json:"botName"`
+	TargetChannel string          `json:"targetChannel"`
+	UUID          string          `json:"uuid"`
+	Commands      []CommandObject `json:"commands"`
+}
+
+func StartBot(botInfo *BotInfo, botRecord BotRecord) {
+	var lastPing = time.Now().Unix()
 	// Connect to the twitch server
 	conn, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
 	if err != nil {
@@ -30,9 +39,9 @@ func StartBot(token string, botName string, targetChannel string, commands []Com
 	}
 
 	// Token, username, channel
-	conn.Write([]byte("PASS " + "oauth:" + token + "\r\n"))
-	conn.Write([]byte("NICK " + botName + "\r\n"))
-	conn.Write([]byte("JOIN " + targetChannel + "\r\n"))
+	conn.Write([]byte("PASS " + "oauth:" + botInfo.Token + "\r\n"))
+	conn.Write([]byte("NICK " + botInfo.BotName + "\r\n"))
+	conn.Write([]byte("JOIN " + botInfo.TargetChannel + "\r\n"))
 	defer conn.Close()
 
 	// Handles reading from the connection
@@ -43,7 +52,7 @@ func StartBot(token string, botName string, targetChannel string, commands []Com
 		case channelResult := <-botRecord.BotChannel:
 			switch {
 			case channelResult == "refresh":
-				routineTimer = 0
+				lastPing = time.Now().Unix()
 			case channelResult == "close":
 				return
 			}
@@ -51,7 +60,8 @@ func StartBot(token string, botName string, targetChannel string, commands []Com
 			break
 		}
 
-		if routineTimer >= 30 {
+		var pingCheck = time.Now().Unix()%lastPing > 1800
+		if pingCheck {
 			return
 		}
 
@@ -75,16 +85,16 @@ func StartBot(token string, botName string, targetChannel string, commands []Com
 
 		if msgParts[1] == "PRIVMSG" {
 			var newMessage string
-			messageText := strings.Split(msg, os.Getenv("CHANNEL_NAME")+" :")
+			messageText := strings.Split(msg, botInfo.TargetChannel+" :")
 
-			for command := range commands {
+			for command := range botInfo.Commands {
 				var newString = strings.Join(messageText, "")
-				if strings.Contains(newString, commands[command].Command) {
-					newMessage = commands[command].Response
+				if strings.Contains(newString, botInfo.Commands[command].Command) {
+					newMessage = botInfo.Commands[command].Response
 				}
 			}
 
-			var message = []byte("PRIVMSG " + os.Getenv("CHANNEL_NAME") + " :" + newMessage + "\r\n")
+			var message = []byte("PRIVMSG " + botInfo.TargetChannel + " :" + newMessage + "\r\n")
 			conn.Write(message)
 		}
 	}

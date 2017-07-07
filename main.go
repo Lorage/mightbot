@@ -12,15 +12,6 @@ type ChannelMessage struct {
 	UUID    string `json:"uuid"`
 }
 
-// Structure of bot creator's submission
-type BotInfo struct {
-	Token         string                   `json:"token"`
-	BotName       string                   `json:"botName"`
-	TargetChannel string                   `json:"targetChannel"`
-	UUID          string                   `json:"uuid"`
-	Commands      []botlogic.CommandObject `json:"commands"`
-}
-
 // Response details
 type ServerResponse struct {
 	Message string
@@ -38,6 +29,11 @@ func decodeValidate(w http.ResponseWriter, r *http.Request, msgObj interface{}) 
 		http.Error(w, err.Error(), 400)
 		return
 	}
+}
+
+func remove(s []botlogic.BotRecord, i int) []botlogic.BotRecord {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
 }
 
 func main() {
@@ -59,16 +55,17 @@ func main() {
 		var closeInfo ChannelMessage
 		decodeValidate(w, r, &closeInfo)
 
-		for _, v := range botDirectory {
-			if v.UUID == closeInfo.UUID {
-				v.BotChannel <- "close"
+		for index, bot := range botDirectory {
+			if bot.UUID == closeInfo.UUID {
+				bot.BotChannel <- "close"
+				botDirectory = remove(botDirectory, index)
 			}
 		}
 	})
 
 	serve.HandleFunc("/createBot", func(w http.ResponseWriter, r *http.Request) {
 		var botExists bool
-		var botInfo BotInfo
+		var botInfo botlogic.BotInfo
 		decodeValidate(w, r, &botInfo)
 
 		for _, val := range botDirectory {
@@ -84,7 +81,7 @@ func main() {
 		newChannel := make(chan string)
 		newRecord := botlogic.BotRecord{UUID: botInfo.UUID, BotChannel: newChannel}
 		botDirectory = append(botDirectory, newRecord)
-		go botlogic.StartBot(botInfo.Token, botInfo.BotName, botInfo.TargetChannel, botInfo.Commands, newRecord)
+		go botlogic.StartBot(&botInfo, newRecord)
 	})
 
 	serve.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
