@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/textproto"
 	"os"
 	"strings"
-	"time"
 )
 
 type BotRecord struct {
@@ -21,15 +19,6 @@ type BotRecord struct {
 type CommandObject struct {
 	Command  string
 	Response string
-}
-
-func checkForCommand(message string) string {
-	var commandMessage []string
-	if strings.HasPrefix(message, "!") {
-		commandMessage = strings.SplitAfter(message, "!")
-	}
-
-	return strings.Join(commandMessage, "")
 }
 
 func StartBot(token string, botName string, targetChannel string, commands []CommandObject, botRecord BotRecord) {
@@ -48,15 +37,6 @@ func StartBot(token string, botName string, targetChannel string, commands []Com
 
 	// Handles reading from the connection
 	tp := textproto.NewReader(bufio.NewReader(conn))
-
-	// Rewrite to remove ticker, use time diff instead
-	ticker := time.NewTicker(time.Minute)
-	go func() {
-		for t := range ticker.C {
-			routineTimer++
-			log.Println(t)
-		}
-	}()
 
 	for {
 		select {
