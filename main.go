@@ -47,6 +47,7 @@ func main() {
 		for _, v := range botDirectory {
 			if v.UUID == refreshInfo.UUID {
 				v.BotChannel <- "refresh"
+				w.Write([]byte("Bot refreshed.\n"))
 			}
 		}
 	})
@@ -59,6 +60,7 @@ func main() {
 			if bot.UUID == closeInfo.UUID {
 				bot.BotChannel <- "close"
 				botDirectory = remove(botDirectory, index)
+				w.Write([]byte("Bot closed.\n"))
 			}
 		}
 	})
@@ -82,6 +84,7 @@ func main() {
 		newRecord := botlogic.BotRecord{UUID: botInfo.UUID, BotChannel: newChannel}
 		botDirectory = append(botDirectory, newRecord)
 		go botlogic.StartBot(&botInfo, newRecord)
+		w.Write([]byte("Bot created.\n"))
 	})
 
 	serve.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
