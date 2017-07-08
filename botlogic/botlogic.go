@@ -61,7 +61,7 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 		}
 
 		// TODO: time check doesn't clear botDirectory of bot botRecord 1800 is 30 minutes
-		if time.Now().Unix()%lastPing > 200 {
+		if time.Now().Unix()%lastPing > 1800 {
 			//var blank = BotInfo{}
 			for index, bot := range *botDirectory {
 				if bot.UUID == botInfo.UUID {
