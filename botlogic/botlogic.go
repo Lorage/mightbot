@@ -60,16 +60,14 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 			break
 		}
 
-		// TODO: time check doesn't clear botDirectory of bot botRecord 1800 is 30 minutes
+		// Checks if bot has been refreshed within last 30 minutes
 		if time.Now().Unix()%lastPing > 1800 {
-			//var blank = BotInfo{}
 			for index, bot := range *botDirectory {
 				if bot.UUID == botInfo.UUID {
 					(*botDirectory)[index] = BotRecord{}
 					return
 				}
 			}
-
 		}
 
 		msg, err := tp.ReadLine()
