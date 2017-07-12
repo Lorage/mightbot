@@ -22,3 +22,4 @@ Use [Twitchapps.com](http://twitchapps.com/tmi/) to generate the OAUTH token.
 
 ## TODO
 1. Rewrite the method/signature for refreshing and closing bot goroutines.
+2. Improve error handling.
