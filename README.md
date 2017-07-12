@@ -18,4 +18,4 @@ Bots can be closed specifically by sending a matching `uuid` to a created bot an
 Use [Twitchapps.com](http://twitchapps.com/tmi/) to generate the OAUTH token.
 
 ## TODO
-1. Make sure there is no channel spam from the bot
+1. Rewrite the method/signature for refreshing and closing bot goroutines.
