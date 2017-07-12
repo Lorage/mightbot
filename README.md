@@ -2,7 +2,7 @@
 A simple Twitch chatbot written in Go.
 
 ## Setup
-1. Run `go run main.go`
+1. Run `go build` & `./mightbot`
 2. Send the token, channel name, uuid, commands, and botname to `/createBot`
 3. Commands are in the form of:
 ``` 
