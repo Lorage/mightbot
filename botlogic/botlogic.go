@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/textproto"
 	"strings"
 	"time"
 )
@@ -44,20 +43,61 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 	conn.Write([]byte("JOIN " + botInfo.TargetChannel + "\r\n"))
 	defer conn.Close()
 
-	// Handles reading from the connection
-	tp := textproto.NewReader(bufio.NewReader(conn))
+	go func() {
+		tp := bufio.NewReader(conn)
+		for {
+			msg, err := tp.ReadString('\n')
+			test := !strings.Contains(msg, "PRIVMSG") && !strings.Contains(msg, "PING")
 
+			if err == io.EOF {
+				continue
+			} else if err != nil {
+				panic(err)
+			} else if test {
+				continue
+			}
+
+			msgParts := strings.Split(msg, " ")
+
+			// For logging purposes
+			fmt.Println(msgParts)
+
+			// Respond with PONG required
+			if msgParts[0] == "PING" {
+				conn.Write([]byte("PONG :tmi.twitch.tv\r\n"))
+				continue
+			}
+
+			if msgParts[1] == "PRIVMSG" {
+				var newMessage string
+				messageText := strings.Split(msg, botInfo.TargetChannel+" :")
+
+				for command := range botInfo.Commands {
+					var newString = strings.Join(messageText, "")
+					if strings.Contains(newString, botInfo.Commands[command].Command) {
+						newMessage = botInfo.Commands[command].Response
+					}
+				}
+
+				var message = []byte("PRIVMSG " + botInfo.TargetChannel + " :" + newMessage + "\r\n")
+				conn.Write(message)
+			}
+		}
+
+	}()
+
+	// Handles reading from the connection
 	for {
 		select {
 		case channelResult := <-botRecord.BotChannel:
 			switch {
 			case channelResult == "refresh":
+				fmt.Println("refreshed")
 				lastPing = time.Now().Unix()
 			case channelResult == "close":
+				fmt.Println("closed")
 				return
 			}
-		default:
-			break
 		}
 
 		// Checks if bot has been refreshed within last 30 minutes
@@ -68,39 +108,6 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 					return
 				}
 			}
-		}
-
-		msg, err := tp.ReadLine()
-		if err == io.EOF {
-			continue
-		} else if err != nil {
-			panic(err)
-		}
-
-		msgParts := strings.Split(msg, " ")
-
-		// For logging purposes
-		fmt.Println(msgParts)
-
-		// Respond with PONG required
-		if msgParts[0] == "PING" {
-			conn.Write([]byte("PONG :tmi.twitch.tv\r\n"))
-			continue
-		}
-
-		if msgParts[1] == "PRIVMSG" {
-			var newMessage string
-			messageText := strings.Split(msg, botInfo.TargetChannel+" :")
-
-			for command := range botInfo.Commands {
-				var newString = strings.Join(messageText, "")
-				if strings.Contains(newString, botInfo.Commands[command].Command) {
-					newMessage = botInfo.Commands[command].Response
-				}
-			}
-
-			var message = []byte("PRIVMSG " + botInfo.TargetChannel + " :" + newMessage + "\r\n")
-			conn.Write(message)
 		}
 	}
 }
