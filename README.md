@@ -2,7 +2,7 @@
 A simple Twitch chatbot written in Go.
 
 ## Setup
-1. Run `go run main.go`
+1. Run `go build` & `./mightbot`
 2. Send the token, channel name, uuid, commands, and botname to `/createBot`
 3. Commands are in the form of:
 ``` 
@@ -17,5 +17,9 @@ Bots can be closed specifically by sending a matching `uuid` to a created bot an
 ### OAUTH
 Use [Twitchapps.com](http://twitchapps.com/tmi/) to generate the OAUTH token.
 
+## Issues
+1. Channel logic doesn't work as expected. Messages sent to the channel only trigger in the for loop after a message is recieved on the net/http `dial` Reader.
+
 ## TODO
-1. Make sure there is no channel spam from the bot
+1. Rewrite the method/signature for refreshing and closing bot goroutines.
+2. Improve error handling.
