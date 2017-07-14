@@ -3,7 +3,6 @@ package botlogic
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
 	"strings"
 	"time"
@@ -44,22 +43,12 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 	defer conn.Close()
 
 	go func() {
-		tp := bufio.NewReader(conn)
-		for {
-			msg, err := tp.ReadString('\n')
-			test := !strings.Contains(msg, "PRIVMSG") && !strings.Contains(msg, "PING")
-
-			if err == io.EOF {
-				continue
-			} else if err != nil {
-				panic(err)
-			} else if test {
-				continue
-			}
-
+		scanner := bufio.NewScanner(bufio.NewReader(conn))
+		for scanner.Scan() {
+			msg := scanner.Text()
 			msgParts := strings.Split(msg, " ")
 
-			// For logging purposes
+			// For logging/debug purposes
 			fmt.Println(msgParts)
 
 			// Respond with PONG required
@@ -68,6 +57,8 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 				continue
 			}
 
+			// Respond to channel member messages
+			// Refactor into function and add new functionality
 			if msgParts[1] == "PRIVMSG" {
 				var newMessage string
 				messageText := strings.Split(msg, botInfo.TargetChannel+" :")
@@ -83,7 +74,6 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 				conn.Write(message)
 			}
 		}
-
 	}()
 
 	// Handles reading from the connection
