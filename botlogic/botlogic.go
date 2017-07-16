@@ -88,10 +88,11 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 				fmt.Println("closed")
 				return
 			}
+		default:
 		}
 
 		// Checks if bot has been refreshed within last 30 minutes
-		if time.Now().Unix()%lastPing > 1800 {
+		if time.Now().Unix()-lastPing > 1800 {
 			for index, bot := range *botDirectory {
 				if bot.UUID == botInfo.UUID {
 					(*botDirectory)[index] = BotRecord{}
