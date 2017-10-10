@@ -11,6 +11,7 @@ import (
 type BotRecord struct {
 	BotChannel chan string
 	UUID       string
+	StartTime  int64
 }
 
 // Structure of []Commands
@@ -92,7 +93,7 @@ func StartBot(botDirectory *[]BotRecord, botInfo *BotInfo, botRecord BotRecord) 
 		}
 
 		// Checks if bot has been refreshed within last 30 minutes
-		if time.Now().Unix()-lastPing > 1800 {
+		if time.Now().Unix()-lastPing > int64(1800) {
 			for index, bot := range *botDirectory {
 				if bot.UUID == botInfo.UUID {
 					(*botDirectory)[index] = BotRecord{}

@@ -5,6 +5,7 @@ import (
 	"log"
 	"mightbot/botlogic"
 	"net/http"
+	"time"
 )
 
 type ChannelMessage struct {
@@ -52,6 +53,18 @@ func main() {
 		}
 	})
 
+	serve.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
+		var refreshInfo ChannelMessage
+		decodeValidate(w, r, &refreshInfo)
+
+		for _, v := range botDirectory {
+			if v.UUID == refreshInfo.UUID {
+				v.BotChannel <- "refresh"
+				w.Write([]byte("Bot refreshed.\n"))
+			}
+		}
+	})
+
 	serve.HandleFunc("/close", func(w http.ResponseWriter, r *http.Request) {
 		var closeInfo ChannelMessage
 		decodeValidate(w, r, &closeInfo)
@@ -77,7 +90,7 @@ func main() {
 		}
 
 		newChannel := make(chan string)
-		newRecord := botlogic.BotRecord{UUID: botInfo.UUID, BotChannel: newChannel}
+		newRecord := botlogic.BotRecord{UUID: botInfo.UUID, StartTime: time.Now().Unix(), BotChannel: newChannel}
 		botDirectory = append(botDirectory, newRecord)
 		go botlogic.StartBot(&botDirectory, &botInfo, newRecord)
 		w.Write([]byte("Bot created.\n"))
