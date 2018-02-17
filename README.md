@@ -18,7 +18,7 @@ Bots can be closed specifically by sending a matching `uuid` to a created bot an
 Use [Twitchapps.com](http://twitchapps.com/tmi/) to generate the OAUTH token.
 
 ## Issues
-1. Channel logic doesn't work as expected. Messages sent to the channel only trigger in the for loop after a message is received on the net/http `dial` Reader.
+1. There's an amount of debounce built into the server, so the bot will respond to messages, but then wait for a time after that. This is sort of good, in that it prevents spam by default, but could cause issues, so I do plan on looking into where this is happening.
 
 ## TODO
 1. Add ability to capture type of command (contains or exact), and user name of message origin.
