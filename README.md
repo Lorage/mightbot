@@ -1,5 +1,5 @@
 # MightBot
-A simple Twitch chatbot written in Go.
+A simple distributed Twitch chatbot written in Go, which can be used to create and run multiple chatbots at once.
 
 ## Setup
 1. Run `go build` & `./mightbot`
@@ -22,6 +22,8 @@ Use [Twitchapps.com](http://twitchapps.com/tmi/) to generate the OAUTH token.
 
 ## TODO
 1. Add ability to capture type of command (contains or exact), and user name of message origin.
-This would be used to target users for bans when they use certain words.
+This would be used to target users for bans when they use certain words or create games that track chat user progress through a task or group task.
 
 2. Improve error handling, (ie, a user tries to refresh a closed/expired bot).
+
+3. Do actual tests in the case of having multple bots running at the same time.
